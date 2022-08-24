@@ -16,7 +16,7 @@ def main():
     import pstats
 
     with cProfile.Profile() as pr:
-
+ 
         module_encode = EncodeModule()
         module_encode.Load(txt_path, num, num_length, dic_paths)
         module_encode.InsertWatermark(out_path)
@@ -28,7 +28,7 @@ def main():
     
     stats = pstats.Stats(pr)
     stats.sort_stats(pstats.SortKey.TIME)
-    stats.dump_stats("profiling_data.prof")
+    stats.dump_stats("../utils/profiling_data2.prof")
 
 if __name__ == '__main__':
     main()

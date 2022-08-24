@@ -1,7 +1,7 @@
-import pandas as pd
 import numpy as np
 import xpinyin as xpy
 import jieba
+from dic import myDic
 import bch
 
 class EncodeModule:
@@ -24,17 +24,8 @@ class EncodeModule:
         self.ConvertIntoBinary(num, serialLength)
         self.dics = []
         for dic_path in dics:
-            dic = pd.read_csv(dic_path, names=[0, 1]) 
-            self.dics.append(dic)
+            self.dics.append(myDic(dic_path))
         self.txt = list(jieba.cut(open(txt_path, mode="r", encoding="utf-8").read())) # 分词，按行隔开
-
-    def find(self, word, col, dic):
-        for i in range(len(dic)):
-            if dic[col][i] == word: # 当前编码正确，不替换
-                return word, True
-            if dic[1-col][i] == word: # 当前编码不正确，替换
-                return dic[col][i], True
-        return None, False
 
     def Insert(self):
         py = xpy.Pinyin()
@@ -56,8 +47,8 @@ class EncodeModule:
                     continue
                 col = self.serialNum[index]    # 当前嵌入的01值
                 dic = self.dics[self.dic_index[first]]                         # 词典
-                chg, flag = self.find(word, col, dic) 
-                if flag is True:
+                chg = dic.find_word(word, col) 
+                if chg is not None:
                     self.txt[i] = chg # 替换
                     positions[self.dic_index[first]] += 1
                     if positions[self.dic_index[first]] == len_serialNum:

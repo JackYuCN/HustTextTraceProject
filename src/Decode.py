@@ -1,7 +1,8 @@
 import numpy as np
-import pandas as pd
 import xpinyin as xpy
 import jieba
+from dic import myDic
+import copy
 import bch
 
 class DecodeModule:
@@ -16,8 +17,7 @@ class DecodeModule:
                          'K':3, 'Q':3, 'H':3, 'L':3, 'Z':3, 'U':3, 'V':3}
         self.dics = []
         for dic_path in dics:
-            dic = pd.read_csv(dic_path, header=None, names=[0, 1]) 
-            self.dics.append(dic)
+            self.dics.append(myDic(dic_path))
         self.txt = list(jieba.cut(open(txt_path, mode="r", encoding="utf-8").read())) # 分词，按行隔开
         self.txt_split = []
         self.Pretreatment()
@@ -33,20 +33,12 @@ class DecodeModule:
                 flag += 1
                 if flag == 2:
                     flag = 1
-                    self.txt_split.append(tmp_split_txt)
+                    self.txt_split.append(copy.deepcopy(tmp_split_txt))
                     for i in range(len(tmp_split_txt)):
                         tmp_split_txt[i] = []
             elif flag == 1 and word >= u'\u4e00' and word <= u'\u9fa5': # word是汉字
                 fir = py.get_initial(word[0])
                 tmp_split_txt[self.relation[fir]].append(word)
-    
-    def find(self, word, dic):
-        for i in range(len(dic)):
-            if dic[0][i] == word: 
-                return 0
-            if dic[1][i] == word: 
-                return 1
-        return None
 
     def Check(self): 
         ans = []   
@@ -56,7 +48,7 @@ class DecodeModule:
                 txt = tmp_txt_split[i]
                 dic = self.dics[i]
                 for word in txt:
-                    res = self.find(word, dic) 
+                    res = dic.find_col(word) 
                     if res is not None:
                         tmp_serialNum.append(res)
                         if len(tmp_serialNum) == self.serial_len:
