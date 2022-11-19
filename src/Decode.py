@@ -8,12 +8,9 @@ class DecodeModule:
     def __init__(self):
         None
 
-    def Load(self, txt_path, dics_path, debug_log_path, serial_len=12):
+    def Load(self, dic_index, txt_path, dics_path, serial_len=12, debug_log_path="../logs/DecodeList.log"):
         self.serial_len = serial_len
-        self.relation = {'B':0, 'C':0, 'D':0, 'T':0, 'E':0, 'F':0,
-                         'P':1, 'G':1, 'N':1, 'W':1, 'S':1, 'O':1,
-                         'R':2, 'M':2, 'X':2, 'J':2, 'A':2, 'Y':2, 'I':2,
-                         'K':3, 'Q':3, 'H':3, 'L':3, 'Z':3, 'U':3, 'V':3}
+        self.dic_index = dic_index
         self.dics = []
         for dic_path in dics_path:
             self.dics.append(myDic(dic_path))
@@ -25,27 +22,34 @@ class DecodeModule:
         code, num_zeros = [], 0
         decode_list = []
         py = xpy.Pinyin()
-        with open(self.debug_log_path, mode='w', encoding='utf-8') as f:
-            for word in self.txt:
-                if self.is_chinese(word): # 检查word是否为汉字
-                    first = py.get_initial(word[0])
-                    idx = self.relation[first]
-                    dic = self.dics[idx]
-                    res = dic.find_col(word)
-                    if res != None:
-                        decode_list.append((word, res))
-                        code.append(res)
-                        if res == 0:
-                            num_zeros += 1
-                            if num_zeros == 3:
-                                ans.append(copy.deepcopy(code[:-3]))
+        cnt = 0
+        if self.debug_log_path != None:
+            f = open(self.debug_log_path, mode='w', encoding="utf-8")
+        for i in range(len(self.txt)):
+            word = self.txt[i]
+            if self.is_chinese(word): # 检查word是否为汉字
+                first = py.get_initial(word[0])
+                idx = self.dic_index[first]
+                dic = self.dics[idx]
+                res = dic.find_col(word)
+                if res != None:
+                    cnt += 1
+                    decode_list.append((word, res))
+                    i += 1
+                    code.append(res)
+                    if res == 0:
+                        num_zeros += 1
+                        if num_zeros == 3:
+                            ans.append(copy.deepcopy(code[:-3]))
+                            if self.debug_log_path != None:
                                 f.write(f"{decode_list[:-3]}\n")
                                 f.write(f"{decode_list[-3:]}\n")
-                                decode_list = []
-                                code, num_zeros = [], 0
-                                continue
-                        else:
-                            num_zeros = 0
+                            decode_list = []
+                            code, num_zeros = [], 0
+                            continue
+                    else:
+                        num_zeros = 0
+
         return ans
     
     def ConvertIntoNumber(self, arr):
@@ -72,13 +76,13 @@ class DecodeModule:
             res_dic[i] = sum(arr)
         max = 0
         max_serial = None
-        print("The result of decode:")
+        # print("The result of decode:\n")
         for i in res_dic.keys():
-            print(f"\t{i} : {res_dic[i]}")
+            # print(f"\t{i} : {res_dic[i]}\n")
             if res_dic[i] > max:
                 max = res_dic[i]
                 max_serial = i
-        print(f"The most likely serial num is {max_serial}")
+        # print(f"The most likely serial num is {max_serial}\n")
     
     def is_chinese(self, word):
         return word >= u'\u4e00' and word <= u'\u9fa5'

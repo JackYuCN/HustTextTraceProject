@@ -6,41 +6,39 @@
 
 from Decode import DecodeModule
 from Encode import EncodeModule
-import pandas as pd
 
 serial_path = "../datas/files/demo/seriallist.csv"
-txt_path = "../datas/files/demo/before.txt"
-dics_path = ["../datas/dics/dic_util_4/0.txt", 
-             "../datas/dics/dic_util_4/1.txt",
-             "../datas/dics/dic_util_4/2.txt", 
-             "../datas/dics/dic_util_4/3.txt",]
-out_path = "../datas/files/demo/after.txt"
-debug_path_encode = "../datas/files/demo/EncodeList.txt"
-debug_path_decode = "../datas/files/demo/DecodeList.txt"
+
+shared_path = "C:\\Users\\24561\\Desktop\\VScodeFolder\\Python\\dachuang\\datas\\testfile\\violence test\\"
+total = 130
+
+dics_path = ["../datas/dics/dic_util_4/0.txt",
+             "../datas/dics/dic_util_4/1.txt",]
 username = "John"
+dic_index = {
+    'A': 0, 'B': 0, 'C': 0, 'D': 1, 'E': 1, 'F': 0, 'G': 0,
+    'H': 1, 'I': 0, 'J': 1, 'K': 0, 'L': 0, 'M': 1, 'N': 1,
+    'O': 1, 'P': 1, 'Q': 1, 'R': 0, 'S': 1, 'T': 1, 'U': 0,
+    'V': 0, 'W': 1, 'X': 0, 'Y': 0, 'Z': 0
+}
+
 
 def main():
+    
+    for i in range(total):
+        
+        before_path = shared_path + "before" + str(i) + ".txt"
+        after_path = shared_path + "after" + str(i) + ".txt"
+        
+        module_encode = EncodeModule()
+        module_encode.Load(dic_index, before_path, dics_path, 586)
+        module_encode.InsertWatermark(after_path)
 
-    df = pd.read_csv(serial_path)
-    tag, num = False, None
-    for i in range(len(df)):
-        if df['valid'][i] == False:
-            tag = True
-            num = df['serial'][i]
-            df.loc[i, 'valid'], df.loc[i, 'username'] = True, username
-            break
-    assert tag == True, "the serial list is full!"
-     
-    module_encode = EncodeModule()
-    module_encode.Load(txt_path, dics_path, debug_path_encode, num)
-    module_encode.InsertWatermark(out_path)
-
-    df.to_csv(serial_path, index=None)    
-
-    module_decode = DecodeModule()
-    module_decode.Load(out_path, dics_path, debug_path_decode)
-    result = module_decode.Check()
-    module_decode.Evaluate(result)
+        # module_decode = DecodeModule()
+        # module_decode.Load(dic_index, after_path, dics_path)
+        # result = module_decode.Check()
+        # module_decode.Evaluate(result)
+            
 
 if __name__ == '__main__':
     main() 
